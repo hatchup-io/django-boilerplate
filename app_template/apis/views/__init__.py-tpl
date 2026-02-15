@@ -1,0 +1,3 @@
+from .{{ entity }}_viewsets import {{ Entity }}ViewSet
+
+__all__ = ["{{ Entity }}ViewSet"]

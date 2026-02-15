@@ -1,0 +1,3 @@
+from .{{ entity }}_serializers import (  # noqa: F401
+    {{ Entity }}Serializer,
+)

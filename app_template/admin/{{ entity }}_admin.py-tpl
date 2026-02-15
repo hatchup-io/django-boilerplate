@@ -1,0 +1,10 @@
+from django.contrib import admin
+
+from common.admins.base import _HatchUpBaseAdmin, admin_site
+from {{ app_name }}.models.{{ app_name }}_{{ entity }}_models import {{ Entity }}
+
+
+@admin.register({{ Entity }}, site=admin_site)
+class {{ Entity }}Admin(_HatchUpBaseAdmin):
+    list_display = ("id", "name", "is_active", "created_at")
+    search_fields = ("name", "description")
