@@ -26,5 +26,3 @@ def crud_object_perms_map(model: Type[Model]) -> Dict[str, List[str]]:
         "destroy": [f"{app}.delete_{name}"],
         "*": [f"{app}.view_{name}"],
     }
-
-

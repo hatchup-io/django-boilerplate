@@ -3,4 +3,3 @@ from .notification_models import (  # noqa: F401
     NotificationRoleTarget,
     NotificationUser,
 )
-

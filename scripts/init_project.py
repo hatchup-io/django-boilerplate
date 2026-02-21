@@ -125,7 +125,10 @@ def main() -> int:
                 ("container_name: hatchup-rustfs", f"container_name: {slug}-rustfs"),
                 ("container_name: hatchup-web", f"container_name: {slug}-web"),
                 ("${DB_NAME:-hatchup}", "${DB_NAME:-" + slug + "}"),
-                ("${RUSTFS_BUCKET_NAME:-hatchup}", "${RUSTFS_BUCKET_NAME:-" + slug + "}"),
+                (
+                    "${RUSTFS_BUCKET_NAME:-hatchup}",
+                    "${RUSTFS_BUCKET_NAME:-" + slug + "}",
+                ),
             ],
         ),
         # core/settings.py
@@ -176,7 +179,7 @@ def main() -> int:
     if env_example.exists():
         if not env_file.exists():
             shutil.copy(env_example, env_file)
-            print(f"  Copied: .env.example -> .env")
+            print("  Copied: .env.example -> .env")
         else:
             print("  .env already exists; skipped copying .env.example")
     else:

@@ -81,7 +81,6 @@ def _is_admin_user(user) -> bool:
     ),
 )
 class NotificationViewSet(HatchupModelViewset):
-
     permission_classes = [IsAuthenticated, NotificationEndpointPermission]
 
     def get_queryset(self):

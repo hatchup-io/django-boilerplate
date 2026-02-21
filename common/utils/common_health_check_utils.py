@@ -7,13 +7,12 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional, Tuple
 
+import sentry_sdk
 from django.conf import settings
 from django.core.cache import caches
 from django.core.cache.backends.base import InvalidCacheBackendError
-
-# from django_redis import get_redis_connection
-# from kombu.exceptions import OperationalError as KombuOperationalError
-# from redis import Redis
+from django_redis import get_redis_connection
+from redis import Redis
 
 logger = logging.getLogger(__name__)
 
