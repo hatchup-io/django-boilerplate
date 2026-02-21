@@ -160,24 +160,24 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# Media storage (MinIO via S3-compatible API)
+# Media storage (RustFS via S3-compatible API)
 # Set these in `.env`:
-# - MINIO_ENDPOINT=localhost:9000
-# - MINIO_ACCESS_KEY=...
-# - MINIO_SECRET_KEY=...
-# - MINIO_BUCKET_NAME=...
-# - MINIO_USE_HTTPS=false
-MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "")
-MINIO_USE_HTTPS = os.getenv("MINIO_USE_HTTPS", "false").lower() == "true"
-AWS_S3_USE_SSL = MINIO_USE_HTTPS
+# - RUSTFS_ENDPOINT=localhost:9000
+# - RUSTFS_ACCESS_KEY=...
+# - RUSTFS_SECRET_KEY=...
+# - RUSTFS_BUCKET_NAME=...
+# - RUSTFS_USE_HTTPS=false
+RUSTFS_ENDPOINT = os.getenv("RUSTFS_ENDPOINT", "")
+RUSTFS_USE_HTTPS = os.getenv("RUSTFS_USE_HTTPS", "false").lower() == "true"
+AWS_S3_USE_SSL = RUSTFS_USE_HTTPS
 
-AWS_ACCESS_KEY_ID = os.getenv("MINIO_ACCESS_KEY", "")
-AWS_SECRET_ACCESS_KEY = os.getenv("MINIO_SECRET_KEY", "")
-AWS_STORAGE_BUCKET_NAME = os.getenv("MINIO_BUCKET_NAME", "")
-AWS_S3_REGION_NAME = os.getenv("MINIO_REGION", "us-east-1")
+AWS_ACCESS_KEY_ID = os.getenv("RUSTFS_ACCESS_KEY", "")
+AWS_SECRET_ACCESS_KEY = os.getenv("RUSTFS_SECRET_KEY", "")
+AWS_STORAGE_BUCKET_NAME = os.getenv("RUSTFS_BUCKET_NAME", "")
+AWS_S3_REGION_NAME = os.getenv("RUSTFS_REGION", "us-east-1")
 AWS_S3_ENDPOINT_URL = (
-    f"{'https' if MINIO_USE_HTTPS else 'http'}://{MINIO_ENDPOINT}"
-    if MINIO_ENDPOINT
+    f"{'https' if RUSTFS_USE_HTTPS else 'http'}://{RUSTFS_ENDPOINT}"
+    if RUSTFS_ENDPOINT
     else None
 )
 AWS_S3_SIGNATURE_VERSION = "s3v4"
@@ -186,14 +186,14 @@ AWS_DEFAULT_ACL = None
 AWS_QUERYSTRING_AUTH = False
 AWS_S3_FILE_OVERWRITE = False
 
-_MINIO_READY = bool(
-    MINIO_ENDPOINT
+_RUSTFS_READY = bool(
+    RUSTFS_ENDPOINT
     and AWS_STORAGE_BUCKET_NAME
     and AWS_ACCESS_KEY_ID
     and AWS_SECRET_ACCESS_KEY
 )
 
-if _MINIO_READY:
+if _RUSTFS_READY:
     _S3_OPTIONS = {
         "access_key": AWS_ACCESS_KEY_ID,
         "secret_key": AWS_SECRET_ACCESS_KEY,
@@ -204,9 +204,9 @@ if _MINIO_READY:
     }
     _S3_OPTIONS = {k: v for k, v in _S3_OPTIONS.items() if v}
 
-    _MINIO_BASE_URL = AWS_S3_ENDPOINT_URL.rstrip("/")
-    MEDIA_URL = f"{_MINIO_BASE_URL}/{AWS_STORAGE_BUCKET_NAME}/media/"
-    STATIC_URL = f"{_MINIO_BASE_URL}/{AWS_STORAGE_BUCKET_NAME}/static/"
+    _RUSTFS_BASE_URL = AWS_S3_ENDPOINT_URL.rstrip("/")
+    MEDIA_URL = f"{_RUSTFS_BASE_URL}/{AWS_STORAGE_BUCKET_NAME}/media/"
+    STATIC_URL = f"{_RUSTFS_BASE_URL}/{AWS_STORAGE_BUCKET_NAME}/static/"
 
     STORAGES = {
         "default": {

@@ -12,9 +12,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends libmagic1 \
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 COPY pyproject.toml uv.lock ./
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
 RUN uv sync --frozen --no-dev
 
-ENV PATH="/app/.venv/bin:$PATH"
+ENV PATH="/opt/venv/bin:$PATH"
 
 COPY . /app
 COPY entrypoint.sh /entrypoint.sh
