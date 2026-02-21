@@ -227,3 +227,5 @@ staticfiles/
 
 # macOS
 .DS_Store
+
+.uv/
