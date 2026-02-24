@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin import AdminSite
+from django.contrib.auth.models import Group as AuthGroup
 
 
 class _HatchUpBaseAdmin(admin.ModelAdmin):
@@ -21,3 +22,11 @@ class HatchupAdminSite(AdminSite):
 
 
 admin_site = HatchupAdminSite(name="hatchup_admin")
+
+# Register Group so autocomplete_fields on UserRoleInline and others work.
+class GroupAdmin(admin.ModelAdmin):
+    search_fields = ("name",)
+    list_display = ("name",)
+
+
+admin_site.register(AuthGroup, GroupAdmin)

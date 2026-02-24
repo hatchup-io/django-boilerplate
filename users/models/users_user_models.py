@@ -1,9 +1,9 @@
-from common.models.common_base_models import HatchUpBaseModel
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
-
+from django.contrib.auth.models import AbstractBaseUser
 from django.db import models
 
+from common.models.common_base_models import HatchUpBaseModel
 from users.managers.users_base_managers import UserManager
+from users.models.users_permission_models import PermissionsMixin
 
 
 class User(AbstractBaseUser, PermissionsMixin, HatchUpBaseModel):
@@ -11,7 +11,6 @@ class User(AbstractBaseUser, PermissionsMixin, HatchUpBaseModel):
     first_name = models.CharField(max_length=255, blank=True)
     last_name = models.CharField(max_length=255, blank=True)
     phone_number = models.CharField(max_length=32, blank=True)
-    is_staff = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

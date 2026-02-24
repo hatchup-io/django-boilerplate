@@ -1,12 +1,20 @@
 from django.contrib import admin
 
+from common.admins.base import _HatchUpBaseAdmin
+from common.admins.base import admin_site
+from users.models.users_role_models import UserRole
 from users.models.users_user_models import User
 
-from common.admins.base import _HatchUpBaseAdmin, admin_site
+
+class UserRoleInline(admin.TabularInline):
+    model = UserRole
+    extra = 0
+    autocomplete_fields = ("role",)
 
 
 @admin.register(User, site=admin_site)
 class UserAdmin(_HatchUpBaseAdmin):
+    inlines = [UserRoleInline]
     list_display = (
         "id",
         "email",

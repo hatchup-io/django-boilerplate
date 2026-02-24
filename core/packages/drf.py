@@ -8,5 +8,6 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
     ],
+    "EXCEPTION_HANDLER": "common.utils.common_exception_handler.hatchup_exception_handler",
     "PAGE_SIZE": 10,
 }

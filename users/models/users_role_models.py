@@ -1,11 +1,12 @@
-from django.db import models
-from common.models.common_base_models import HatchUpBaseModel
 from django.contrib.auth.models import Group
+from django.db import models
+
+from common.models.common_base_models import HatchUpBaseModel
 
 
 class UserRole(HatchUpBaseModel):
-    user_id = models.ForeignKey("users.User", on_delete=models.CASCADE)
-    role_id = models.ForeignKey(Group, on_delete=models.CASCADE)
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE)
+    role = models.ForeignKey(Group, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "User Role"
@@ -13,4 +14,4 @@ class UserRole(HatchUpBaseModel):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return self.user_id.full_name
+        return self.user.full_name

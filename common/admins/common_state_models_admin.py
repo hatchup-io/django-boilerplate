@@ -1,5 +1,5 @@
 from common.admins.base import _HatchUpBaseAdmin, admin_site
-from common.models.common_state_models import StateTransitionLog
+from common.models.common_workflow_models import StateTransitionLog
 from django.contrib import admin
 
 

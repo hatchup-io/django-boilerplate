@@ -13,14 +13,14 @@ class GroupAdmin(GroupAdmin):
 
 @admin.register(UserRole, site=admin_site)
 class UserRoleAdmin(_HatchUpBaseAdmin):
-    list_display = ("id", "user_id", "role_id", "created_at", "is_active")
-    list_filter = _HatchUpBaseAdmin.list_filter + ("role_id",)
+    list_display = ("id", "user", "role", "created_at", "is_active")
+    list_filter = _HatchUpBaseAdmin.list_filter + ("role",)
     search_fields = (
-        "user_id__email",
-        "user_id__first_name",
-        "user_id__last_name",
-        "role_id__name",
+        "user__email",
+        "user__first_name",
+        "user__last_name",
+        "role__name",
     )
-    autocomplete_fields = ("user_id", "role_id")
-    list_select_related = ("user_id", "role_id")
+    autocomplete_fields = ("user", "role")
+    list_select_related = ("user", "role")
     date_hierarchy = "created_at"
