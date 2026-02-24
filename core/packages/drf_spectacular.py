@@ -5,7 +5,7 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     "PARSER_WHITELIST": ["rest_framework.parsers.JSONParser"],
     "SERVE_AUTHENTICATION": [
-        "common.configs.classes.common_authentication_classes.HatchupJWTAuthentication",
+        "apps.common.configs.classes.common_authentication_classes.HatchupJWTAuthentication",
     ],
     "SECURITY": [{"Hatchup_auth": []}],
     "COMPONENTS": {

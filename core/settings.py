@@ -42,11 +42,11 @@ INSTALLED_APPS = [
     "django_filters",
     "rest_framework",
     "drf_spectacular",
-    "common.apps.CommonConfig",
-    "users.apps.UsersConfig",
-    "auth.apps.AuthConfig",
-    "notification.apps.NotificationConfig",
-    "document.apps.DocumentConfig",
+    "apps.common.apps.CommonConfig",
+    "apps.users.apps.UsersConfig",
+    "apps.auth.apps.AuthConfig",
+    "apps.notification.apps.NotificationConfig",
+    "apps.document.apps.DocumentConfig",
 ]
 
 # Custom user model
@@ -114,7 +114,9 @@ WSGI_APPLICATION = "core.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-_IS_TEST_RUN = "pytest" in " ".join(sys.argv) or (len(sys.argv) > 1 and sys.argv[1] == "test")
+_IS_TEST_RUN = "pytest" in " ".join(sys.argv) or (
+    len(sys.argv) > 1 and sys.argv[1] == "test"
+)
 
 if _IS_TEST_RUN:
     _test_db_name = os.getenv("TEST_DB_NAME", os.getenv("DB_NAME", "postgres"))
@@ -123,7 +125,9 @@ if _IS_TEST_RUN:
             "ENGINE": "django.db.backends.postgresql",
             "NAME": _test_db_name,
             "USER": os.getenv("TEST_DB_USER", os.getenv("DB_USER", "postgres")),
-            "PASSWORD": os.getenv("TEST_DB_PASSWORD", os.getenv("DB_PASSWORD", "postgres")),
+            "PASSWORD": os.getenv(
+                "TEST_DB_PASSWORD", os.getenv("DB_PASSWORD", "postgres")
+            ),
             "HOST": os.getenv("TEST_DB_HOST", os.getenv("DB_HOST", "localhost")),
             "PORT": os.getenv("TEST_DB_PORT", os.getenv("DB_PORT", "5432")),
             "TEST": {"NAME": _test_db_name},

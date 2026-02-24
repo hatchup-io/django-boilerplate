@@ -1,0 +1,9 @@
+from rest_framework.routers import DefaultRouter
+
+from apps.{{ app_name }}.apis.views.{{ entity }}_viewsets import {{ Entity }}ViewSet
+
+router = DefaultRouter()
+router.register(r"", {{ Entity }}ViewSet, basename="{{ entity }}")
+
+urlpatterns = []
+urlpatterns += router.urls
