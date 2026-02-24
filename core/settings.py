@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -20,7 +21,9 @@ SECRET_KEY = "django-insecure-&6^0-uxgjdw+b$bbgt2wk+umahqh=)tqhu^ei(4q7oyo^gm(^u
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "yes")
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS = [host for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host]
+if DEBUG and not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
 
 # Application definition
@@ -32,6 +35,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "storages",
     "django_jsonform",
     "django_ckeditor_5",
@@ -41,6 +45,8 @@ INSTALLED_APPS = [
     "common.apps.CommonConfig",
     "users.apps.UsersConfig",
     "auth.apps.AuthConfig",
+    "notification.apps.NotificationConfig",
+    "document.apps.DocumentConfig",
 ]
 
 # Custom user model
@@ -75,6 +81,8 @@ else:
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -106,17 +114,33 @@ WSGI_APPLICATION = "core.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+_IS_TEST_RUN = "pytest" in " ".join(sys.argv) or (len(sys.argv) > 1 and sys.argv[1] == "test")
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME", "postgres"),
-        "USER": os.getenv("DB_USER", "postgres"),
-        "PASSWORD": os.getenv("DB_PASSWORD", "postgres"),
-        "HOST": os.getenv("DB_HOST", "localhost"),
-        "PORT": os.getenv("DB_PORT", "5432"),
+if _IS_TEST_RUN:
+    _test_db_name = os.getenv("TEST_DB_NAME", os.getenv("DB_NAME", "postgres"))
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": _test_db_name,
+            "USER": os.getenv("TEST_DB_USER", os.getenv("DB_USER", "postgres")),
+            "PASSWORD": os.getenv("TEST_DB_PASSWORD", os.getenv("DB_PASSWORD", "postgres")),
+            "HOST": os.getenv("TEST_DB_HOST", os.getenv("DB_HOST", "localhost")),
+            "PORT": os.getenv("TEST_DB_PORT", os.getenv("DB_PORT", "5432")),
+            "TEST": {"NAME": _test_db_name},
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DB_NAME", "postgres"),
+            "USER": os.getenv("DB_USER", "postgres"),
+            "PASSWORD": os.getenv("DB_PASSWORD", "postgres"),
+            "HOST": os.getenv("DB_HOST", "localhost"),
+            "PORT": os.getenv("DB_PORT", "5432"),
+        }
+    }
+DATABASES["default"]["ATOMIC_REQUESTS"] = True
 
 
 # Password validation
@@ -137,6 +161,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -149,6 +179,25 @@ USE_I18N = True
 
 USE_TZ = True
 
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+X_FRAME_OPTIONS = "DENY"
+
+# Email (for OTP, notifications)
+if _IS_TEST_RUN:
+    EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    OTP_EMAIL_ASYNC_SEND = False
+else:
+    EMAIL_BACKEND = os.getenv(
+        "EMAIL_BACKEND",
+        "django.core.mail.backends.console.EmailBackend",
+    )
+    OTP_EMAIL_ASYNC_SEND = os.getenv("OTP_EMAIL_ASYNC_SEND", "true").lower() in (
+        "true",
+        "1",
+        "yes",
+    )
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@example.com")
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
@@ -225,7 +274,7 @@ else:
             "OPTIONS": {"location": MEDIA_ROOT, "base_url": MEDIA_URL},
         },
         "staticfiles": {
-            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
         },
     }
 
@@ -237,6 +286,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "local")
 
+from .packages import REST_FRAMEWORK  # noqa: E402
+from .packages.cors import *  # noqa: E402, F403
+from .packages.simple_jwt import SIMPLE_JWT  # noqa: E402
 from .packages.sentry import init_sentry  # noqa: E402
 
 init_sentry(environment=ENVIRONMENT)

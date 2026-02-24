@@ -46,10 +46,12 @@ A **GitHub template** for a Django 6 REST API with DRF, JWT auth, Redis cache, P
 3. **Configure environment and run**
     ```bash
     cp .env.example .env
-    # Edit .env: DB_NAME, MINIO_BUCKET_NAME, etc. (defaults match your slug after init)
+    # Edit .env: DB_NAME, CORS_ALLOWED_ORIGINS, etc. (defaults match your slug after init)
     # Optional: set SENTRY_DSN to enable Sentry error monitoring and performance tracing
-    poetry install
+    uv sync
     python manage.py migrate
+    python manage.py setup_roles   # optional: create base roles (Admin, Super Admin, Client)
+    # Or: python manage.py loaddata base_roles  # if using users/fixtures/base_roles.json
     python manage.py runserver
     ```
 
@@ -60,7 +62,7 @@ A **GitHub template** for a Django 6 REST API with DRF, JWT auth, Redis cache, P
 -   Python 3.12+, Django 6, Django REST Framework 3.16
 -   drf-spectacular (OpenAPI), drf-simplejwt, django-redis, django-filter
 -   PostgreSQL, Redis (cache), MinIO/S3 (media/static), Sentry (optional)
--   Poetry for dependency management
+-   uv for dependency management (pyproject.toml is the source of truth)
 
 ## Project rules and structure
 

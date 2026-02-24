@@ -33,6 +33,9 @@ dependencies = [
     "django-ckeditor-5 (==0.2.19)",
     "six (==1.17.0)",
     "sentry-sdk (>=2.0.0,<3.0.0)",
+    "django-cors-headers (>=4.3.0)",
+    "whitenoise (>=6.8.0)",
+    "argon2-cffi (>=23.1.0)",
 ]
 
 

@@ -5,7 +5,7 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
-from common.admins.base import admin_site
+from common.admins import admin_site
 from django.conf.urls.static import static
 
 THIRD_PARTY_URLS = [
@@ -22,6 +22,7 @@ THIRD_PARTY_URLS = [
 APP_URLS = [
     path("auth/", include("auth.apis.urls")),
     path("users/", include("users.apis.urls")),
+    path("document/", include("document.apis.urls")),
 ]
 
 
