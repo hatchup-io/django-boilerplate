@@ -4,7 +4,9 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from apps.auth.apis.serializers.auth_authentication_serializers import AuthenticationTokensSerializer
+from apps.auth.apis.serializers.auth_authentication_serializers import (
+    AuthenticationTokensSerializer,
+)
 from apps.auth.apis.serializers.auth_otp_serializers import OTPRequestSerializer
 from apps.auth.apis.serializers.auth_otp_serializers import OTPRequestSuccessSerializer
 from apps.auth.apis.serializers.auth_otp_serializers import OTPTokenExchangeSerializer
@@ -39,22 +41,18 @@ class OTPRequestView(HatchupAPIView):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"].strip().lower()
         purpose = serializer.validated_data["purpose"]
+        # Use same response for all cases to avoid user enumeration.
+        generic_message = "If your request can be processed, you will receive a one-time password at this email address."
         if purpose == OTP_PURPOSE_LOGIN:
             if not User.objects.filter(email__iexact=email).exists():
-                return Response(
-                    {"detail": "No user with this email exists."},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+                return Response({"message": generic_message}, status=status.HTTP_200_OK)
         elif purpose == OTP_PURPOSE_REGISTER:
             if User.objects.filter(email__iexact=email).exists():
-                return Response(
-                    {"detail": "A user with this email already exists."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+                return Response({"message": generic_message}, status=status.HTTP_200_OK)
         otp = generate_otp()
         store_otp(email, otp, purpose)
         send_otp_email(email, otp, purpose)
-        return Response({"message": "OTP sent successfully."}, status=status.HTTP_200_OK)
+        return Response({"message": generic_message}, status=status.HTTP_200_OK)
 
 
 class OTPVerifyView(HatchupAPIView):
@@ -80,7 +78,9 @@ class OTPVerifyView(HatchupAPIView):
                 {"detail": "Invalid or expired OTP."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        return Response({"otp_verification_id": verification_id}, status=status.HTTP_200_OK)
+        return Response(
+            {"otp_verification_id": verification_id}, status=status.HTTP_200_OK
+        )
 
 
 class OTPTokenExchangeView(HatchupAPIView):
@@ -97,7 +97,9 @@ class OTPTokenExchangeView(HatchupAPIView):
     def post(self, request):
         serializer = OTPTokenExchangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        verification_id = (serializer.validated_data["otp_verification_id"] or "").strip()
+        verification_id = (
+            serializer.validated_data["otp_verification_id"] or ""
+        ).strip()
         payload = consume_verification_id(verification_id)
         if payload is None:
             return Response(
@@ -120,8 +122,8 @@ class OTPTokenExchangeView(HatchupAPIView):
             user = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
             return Response(
-                {"detail": "User not found."},
-                status=status.HTTP_404_NOT_FOUND,
+                {"detail": "Invalid or expired verification."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
         tokens = generate_token_for_user(user)
         return Response(tokens, status=status.HTTP_200_OK)

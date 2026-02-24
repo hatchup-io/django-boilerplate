@@ -47,8 +47,7 @@ class HatchupJWTAuthentication(JWTAuthentication):
         try:
             user = User.objects.get(id=decoded_payload.get("user_id"), is_active=True)
         except User.DoesNotExist as err:
-            msg = "User not found"
-            raise AuthenticationFailed(msg) from err
+            raise AuthenticationFailed("Invalid token") from err
 
         return user
 
