@@ -13,4 +13,5 @@ build
 *.log
 db.sqlite3
 .env
+.venv
 

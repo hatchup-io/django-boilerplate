@@ -1,1 +1,3 @@
-from .companies_startup_schema import *
+"""Common config schemas."""
+
+__all__: list[str] = []

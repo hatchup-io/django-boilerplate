@@ -1,1 +1,3 @@
-from .users_user_admin import *
+from .users_user_admin import UserAdmin
+
+__all__ = ["UserAdmin"]

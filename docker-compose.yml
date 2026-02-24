@@ -33,18 +33,24 @@ services:
             retries: 5
         restart: unless-stopped
 
-    minio:
-        image: minio/minio:latest
-        container_name: hatchup-minio
+    rustfs:
+        image: rustfs/rustfs:latest
+        container_name: hatchup-rustfs
         environment:
-            MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
-            MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+            RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
+            RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
+            RUSTFS_CONSOLE_ENABLE: 'true'
         volumes:
-            - minio_data:/data
+            - rustfs_data:/data
         ports:
             - '19000:9000'
             - '19001:9001'
-        command: server /data --console-address ":9001"
+        command: --console-enable /data
+        healthcheck:
+            test: ['CMD', 'curl', '-f', 'http://localhost:9000/health/live']
+            interval: 10s
+            timeout: 5s
+            retries: 5
         restart: unless-stopped
 
     web:
@@ -60,12 +66,12 @@ services:
             DB_NAME: ${DB_NAME:-hatchup}
             DB_USER: ${DB_USER:-postgres}
             DB_PASSWORD: ${DB_PASSWORD:-postgres}
-            MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio:9000}
-            MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
-            MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
-            MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-hatchup}
-            MINIO_REGION: ${MINIO_REGION:-us-east-1}
-            MINIO_USE_HTTPS: ${MINIO_USE_HTTPS:-false}
+            RUSTFS_ENDPOINT: ${RUSTFS_ENDPOINT:-rustfs:9000}
+            RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
+            RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
+            RUSTFS_BUCKET_NAME: ${RUSTFS_BUCKET_NAME:-hatchup}
+            RUSTFS_REGION: ${RUSTFS_REGION:-us-east-1}
+            RUSTFS_USE_HTTPS: ${RUSTFS_USE_HTTPS:-false}
             REDIS_URL: ${REDIS_URL:-redis://redis:6379/1}
         ports:
             - '${WEB_PORT:-8000}:8000'
@@ -74,9 +80,9 @@ services:
         depends_on:
             - db
             - redis
-            - minio
+            - rustfs
 
 volumes:
     postgres_data:
-    minio_data:
+    rustfs_data:
     redis_data:

@@ -122,10 +122,13 @@ def main() -> int:
             [
                 ("container_name: hatchup-db", f"container_name: {slug}-db"),
                 ("container_name: hatchup-redis", f"container_name: {slug}-redis"),
-                ("container_name: hatchup-minio", f"container_name: {slug}-minio"),
+                ("container_name: hatchup-rustfs", f"container_name: {slug}-rustfs"),
                 ("container_name: hatchup-web", f"container_name: {slug}-web"),
                 ("${DB_NAME:-hatchup}", "${DB_NAME:-" + slug + "}"),
-                ("${MINIO_BUCKET_NAME:-hatchup}", "${MINIO_BUCKET_NAME:-" + slug + "}"),
+                (
+                    "${RUSTFS_BUCKET_NAME:-hatchup}",
+                    "${RUSTFS_BUCKET_NAME:-" + slug + "}",
+                ),
             ],
         ),
         # core/settings.py
@@ -176,21 +179,21 @@ def main() -> int:
     if env_example.exists():
         if not env_file.exists():
             shutil.copy(env_example, env_file)
-            print(f"  Copied: .env.example -> .env")
+            print("  Copied: .env.example -> .env")
         else:
             print("  .env already exists; skipped copying .env.example")
     else:
         print("  Skip: .env.example not found")
 
-    # Run poetry install
-    print("\nRunning: poetry install")
+    # Run uv sync
+    print("\nRunning: uv sync")
     result = subprocess.run(
-        ["poetry", "install"],
+        ["uv", "sync"],
         cwd=ROOT,
         capture_output=False,
     )
     if result.returncode != 0:
-        print("  poetry install failed; run it manually: poetry install")
+        print("  uv sync failed; run it manually: uv sync")
         return result.returncode
 
     print("\nDone. Next step: python manage.py migrate")

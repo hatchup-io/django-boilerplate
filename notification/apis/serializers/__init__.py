@@ -3,4 +3,3 @@ from .notification_serializers import (  # noqa: F401
     NotificationAdminCreateSerializer,
     NotificationSerializer,
 )
-

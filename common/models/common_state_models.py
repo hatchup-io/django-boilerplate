@@ -79,10 +79,9 @@ class StateTransitionMixin(models.Model):
         if transition_method is None:
             raise ValidationError(f"Unknown transition '{transition_name}'.")
 
-        resolved_field = (
-            state_field
-            or getattr(self, "transition_state_fields", {}).get(transition_name)
-        )
+        resolved_field = state_field or getattr(
+            self, "transition_state_fields", {}
+        ).get(transition_name)
 
         if not can_proceed(transition_method):
             raise ValidationError(

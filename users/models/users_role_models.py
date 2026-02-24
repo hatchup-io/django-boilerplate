@@ -1,11 +1,9 @@
 from django.db import models
 from common.models.common_base_models import HatchUpBaseModel
-from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import Group
 
 
 class UserRole(HatchUpBaseModel):
-
     user_id = models.ForeignKey("users.User", on_delete=models.CASCADE)
     role_id = models.ForeignKey(Group, on_delete=models.CASCADE)
 

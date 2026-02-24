@@ -22,7 +22,6 @@ class HatchupHealthCheckView(HatchupAPIView):
 
 
 class HatchupReadinessView(HatchupAPIView):
-
     authentication_classes: tuple = ()
     permission_classes: tuple = ()
 

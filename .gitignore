@@ -224,3 +224,8 @@ orval.config.js
 src/
 
 staticfiles/
+
+# macOS
+.DS_Store
+
+.uv/

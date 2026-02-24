@@ -14,7 +14,6 @@ from notification.configs.constants.notification_enums import (
 
 
 class Notification(HatchUpBaseModel):
-
     title = models.CharField(max_length=255)
     message = models.TextField()
     category = models.CharField(
@@ -95,7 +94,6 @@ class NotificationRoleTarget(HatchUpBaseModel):
 
 
 class NotificationUser(HatchUpBaseModel):
-
     notification = models.ForeignKey(
         "notification.Notification",
         on_delete=models.CASCADE,

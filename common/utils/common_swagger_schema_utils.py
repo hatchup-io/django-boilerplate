@@ -1,6 +1,5 @@
 from drf_spectacular.utils import OpenApiResponse
 from drf_yasg import openapi
-from rest_framework.response import Response
 
 
 def base_schema_response(message):
