@@ -229,3 +229,5 @@ staticfiles/
 .DS_Store
 
 .uv/
+
+.vscode/
