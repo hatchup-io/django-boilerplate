@@ -1,6 +1,8 @@
-from apps.common.admins.base import _HatchUpBaseAdmin, admin_site
-from apps.common.models.common_workflow_models import StateTransitionLog
 from django.contrib import admin
+
+from apps.common.admins.base import _HatchUpBaseAdmin
+from apps.common.admins.base import admin_site
+from apps.common.models.common_workflow_models import StateTransitionLog
 
 
 @admin.register(StateTransitionLog, site=admin_site)

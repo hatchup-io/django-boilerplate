@@ -1,7 +1,8 @@
 from django.contrib import admin
 
 from apps.auth.models.object_permission_models import UserObjectPermission
-from apps.common.admins.base import _HatchUpBaseAdmin, admin_site
+from apps.common.admins.base import _HatchUpBaseAdmin
+from apps.common.admins.base import admin_site
 
 
 @admin.register(UserObjectPermission, site=admin_site)

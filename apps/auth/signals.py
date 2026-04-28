@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db.models.signals import m2m_changed, post_migrate
+from django.db.models.signals import m2m_changed
+from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 
-from apps.auth.services.roles import (
-    RoleBootstrapSpec,
-    ensure_roles_exist,
-    invalidate_user_roles_cache,
-)
+from apps.auth.services.roles import RoleBootstrapSpec
+from apps.auth.services.roles import ensure_roles_exist
+from apps.auth.services.roles import invalidate_user_roles_cache
 
 User = get_user_model()
 

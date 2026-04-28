@@ -3,21 +3,21 @@ from __future__ import annotations
 from django.db import transaction
 from django.db.models import Prefetch
 from django.utils import timezone
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema_view
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.auth.services.roles import has_any_role, is_platform_admin
-from apps.notification.apis.permissions import NotificationEndpointPermission
-from apps.notification.apis.serializers import (
-    MarkAsReadSerializer,
-    NotificationAdminCreateSerializer,
-    NotificationSerializer,
-)
-from apps.notification.models.notification_models import Notification, NotificationUser
-
+from apps.auth.services.roles import has_any_role
+from apps.auth.services.roles import is_platform_admin
 from apps.common.apis.views.common_base_views import HatchupModelViewset
+from apps.notification.apis.permissions import NotificationEndpointPermission
+from apps.notification.apis.serializers import MarkAsReadSerializer
+from apps.notification.apis.serializers import NotificationAdminCreateSerializer
+from apps.notification.apis.serializers import NotificationSerializer
+from apps.notification.models.notification_models import Notification
+from apps.notification.models.notification_models import NotificationUser
 
 
 def _is_admin_action(view) -> bool:
@@ -26,11 +26,7 @@ def _is_admin_action(view) -> bool:
 
 
 def _is_admin_user(user) -> bool:
-    return bool(
-        user
-        and user.is_authenticated
-        and (is_platform_admin(user) or has_any_role(user, ["Admin"]))
-    )
+    return bool(user and user.is_authenticated and (is_platform_admin(user) or has_any_role(user, ["Admin"])))
 
 
 @extend_schema_view(
@@ -120,11 +116,7 @@ class NotificationViewSet(HatchupModelViewset):
     def unread_count(self, request):
         user = request.user
         visible = Notification.visible_to_user_queryset(user=user)
-        unread = (
-            visible.exclude(user_states__user=user, user_states__read_at__isnull=False)
-            .distinct()
-            .count()
-        )
+        unread = visible.exclude(user_states__user=user, user_states__read_at__isnull=False).distinct().count()
         return Response({"unread_count": unread})
 
     @extend_schema(
@@ -179,31 +171,20 @@ class NotificationViewSet(HatchupModelViewset):
         user = request.user
         now = timezone.now()
 
-        visible_ids = list(
-            Notification.visible_to_user_queryset(user=user).values_list(
-                "id", flat=True
-            )
-        )
+        visible_ids = list(Notification.visible_to_user_queryset(user=user).values_list("id", flat=True))
         if not visible_ids:
             return Response({"marked_read": 0})
 
-        existing_states = NotificationUser.objects.filter(
-            user=user, notification_id__in=visible_ids
-        )
+        existing_states = NotificationUser.objects.filter(user=user, notification_id__in=visible_ids)
 
-        existing_by_notif_id = {
-            s.notification_id: s
-            for s in existing_states.only("id", "notification_id", "read_at")
-        }
+        existing_by_notif_id = {s.notification_id: s for s in existing_states.only("id", "notification_id", "read_at")}
 
         to_create = []
         to_update = []
         for nid in visible_ids:
             st = existing_by_notif_id.get(nid)
             if not st:
-                to_create.append(
-                    NotificationUser(user=user, notification_id=nid, read_at=now)
-                )
+                to_create.append(NotificationUser(user=user, notification_id=nid, read_at=now))
             elif st.read_at is None:
                 st.read_at = now
                 to_update.append(st)
@@ -212,8 +193,6 @@ class NotificationViewSet(HatchupModelViewset):
             if to_create:
                 NotificationUser.objects.bulk_create(to_create, ignore_conflicts=True)
             if to_update:
-                NotificationUser.objects.bulk_update(
-                    to_update, ["read_at", "updated_at"]
-                )
+                NotificationUser.objects.bulk_update(to_update, ["read_at", "updated_at"])
 
         return Response({"marked_read": len(to_create) + len(to_update)})

@@ -1,11 +1,10 @@
 from django.contrib import admin
 
-from apps.common.admins.base import _HatchUpBaseAdmin, admin_site
-from apps.messaging.models.messaging_models import (
-    Conversation,
-    ConversationParticipant,
-    Message,
-)
+from apps.common.admins.base import _HatchUpBaseAdmin
+from apps.common.admins.base import admin_site
+from apps.messaging.models.messaging_models import Conversation
+from apps.messaging.models.messaging_models import ConversationParticipant
+from apps.messaging.models.messaging_models import Message
 
 
 @admin.register(Conversation, site=admin_site)

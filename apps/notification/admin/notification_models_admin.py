@@ -1,11 +1,10 @@
 from django.contrib import admin
 
-from apps.common.admins.base import _HatchUpBaseAdmin, admin_site
-from apps.notification.models.notification_models import (
-    Notification,
-    NotificationRoleTarget,
-    NotificationUser,
-)
+from apps.common.admins.base import _HatchUpBaseAdmin
+from apps.common.admins.base import admin_site
+from apps.notification.models.notification_models import Notification
+from apps.notification.models.notification_models import NotificationRoleTarget
+from apps.notification.models.notification_models import NotificationUser
 
 
 @admin.register(Notification, site=admin_site)

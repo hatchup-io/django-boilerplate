@@ -1,15 +1,16 @@
 # Standard library imports
 import base64
 import csv
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
+from decimal import InvalidOperation
 from uuid import uuid4
-
-# Django imports
-from django.core.files.base import ContentFile
 
 # Third-party imports
 import magic
 import six
+
+# Django imports
+from django.core.files.base import ContentFile
 from djmoney.money import Money
 from rest_framework import serializers
 
@@ -39,7 +40,7 @@ class MoneySerializerField(serializers.Field):
         if isinstance(data, (int, float)):
             try:
                 amount = Decimal(str(data))
-            except (InvalidOperation, ValueError):
+            except InvalidOperation, ValueError:
                 self.fail("invalid")
             return Money(amount=amount, currency=self.default_currency)
         if isinstance(data, six.string_types):
@@ -49,7 +50,7 @@ class MoneySerializerField(serializers.Field):
             parts = data.split(None, 1)
             try:
                 amount = Decimal(parts[0])
-            except (InvalidOperation, ValueError):
+            except InvalidOperation, ValueError:
                 self.fail("invalid")
             currency = parts[1] if len(parts) > 1 else self.default_currency
             return Money(amount=amount, currency=currency)
@@ -60,10 +61,11 @@ class MoneySerializerField(serializers.Field):
                 self.fail("invalid")
             try:
                 amount = Decimal(str(amount_str))
-            except (InvalidOperation, ValueError):
+            except InvalidOperation, ValueError:
                 self.fail("invalid")
             return Money(amount=amount, currency=currency)
         self.fail("invalid")
+        return None
 
     def to_representation(self, value):
         if value is None:
@@ -96,7 +98,7 @@ class Base64FileField(serializers.FileField):
             # Check if the base64 string is in the "data:" format
             if "data:" in data and ";base64," in data:
                 # Break out the header from the base64 content
-                header, data = data.split(";base64,")
+                _header, data = data.split(";base64,")
 
             # Try to decode the file. Return validation error if it fails.
             try:
@@ -114,7 +116,7 @@ class Base64FileField(serializers.FileField):
             # Return as a ContentFile object
             data = ContentFile(decoded_file, name=complete_file_name)
 
-        return super(Base64FileField, self).to_internal_value(data)
+        return super().to_internal_value(data)
 
     def get_file_extension(self, file_name, decoded_file):
         """
@@ -139,10 +141,7 @@ class Base64FileField(serializers.FileField):
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         ]:
             extension = (
-                "xlsx"
-                if file_type
-                == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                else "xls"
+                "xlsx" if file_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" else "xls"
             )
 
         elif file_type in ("text/csv", "application/csv"):
@@ -151,9 +150,7 @@ class Base64FileField(serializers.FileField):
         elif file_type == "text/plain":
             try:
                 sample = decoded_file[:4096].decode("utf-8", errors="ignore")
-                if (
-                    "," in sample or ";" in sample or "\t" in sample
-                ) and csv.Sniffer().sniff(sample):
+                if ("," in sample or ";" in sample or "\t" in sample) and csv.Sniffer().sniff(sample):
                     extension = "csv"
                 else:
                     self.fail("unsupported_file_type")

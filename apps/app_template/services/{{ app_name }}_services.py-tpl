@@ -1,0 +1,26 @@
+"""
+Business logic for the {{ app_name }} app.
+
+Conventions:
+- Module-level functions, not static-method classes.
+- Take domain arguments (e.g. `validated_data`, ids, model instances) — never `request`.
+- Raise `apps.common.exceptions.{DomainError, BusinessRuleError, NotFoundError, ConflictError}`
+  instead of returning error tuples or raising `APIException` directly.
+- Keep ORM queries here; views and serializers should be thin.
+"""
+
+from __future__ import annotations
+
+from apps.common.exceptions import ConflictError
+from apps.{{ app_name }}.models.{{ app_name }}_{{ entity }}_models import {{ Entity }}
+
+
+def create_{{ entity }}(*, name: str, description: str = "") -> {{ Entity }}:
+    """Create a new {{ Entity }}.
+
+    Raises:
+        ConflictError: if a {{ Entity }} with the same name already exists.
+    """
+    if {{ Entity }}.objects.filter(name=name).exists():
+        raise ConflictError(f"A {{ entity }} named '{name}' already exists.")
+    return {{ Entity }}.objects.create(name=name, description=description)

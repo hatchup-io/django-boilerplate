@@ -3,9 +3,11 @@ from __future__ import annotations
 import logging
 import os
 import time
-from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
-from typing import Any, Dict, Optional, Tuple
+from dataclasses import asdict
+from dataclasses import dataclass
+from datetime import UTC
+from datetime import datetime
+from typing import Any
 
 import sentry_sdk
 from django.conf import settings
@@ -24,9 +26,7 @@ def _env_flag(name: str, default: bool = False) -> bool:
     return os.getenv(name, str(default)).lower() in {"1", "true", "yes", "on"}
 
 
-def _capture_exception(
-    message: str, exc: BaseException, *, extra: Optional[Dict[str, Any]] = None
-) -> None:
+def _capture_exception(message: str, exc: BaseException, *, extra: dict[str, Any] | None = None) -> None:
     logger.warning("%s: %s", message, exc, extra=extra)
     sentry_sdk.capture_exception(exc)
 
@@ -36,10 +36,10 @@ class ServiceCheckResult:
     name: str
     status: str
     message: str
-    latency_ms: Optional[float] = None
-    details: Optional[Dict[str, Any]] = None
+    latency_ms: float | None = None
+    details: dict[str, Any] | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         payload = asdict(self)
         # Keep payload compact by pruning None values.
         return {key: value for key, value in payload.items() if value is not None}
@@ -125,7 +125,7 @@ def check_cache() -> ServiceCheckResult:
         )
 
 
-def gather_service_statuses() -> Dict[str, Dict[str, Any]]:
+def gather_service_statuses() -> dict[str, dict[str, Any]]:
     checks = [
         # check_redis(),
         # check_cache(),
@@ -133,7 +133,7 @@ def gather_service_statuses() -> Dict[str, Dict[str, Any]]:
     return {check.name: check.to_dict() for check in checks}
 
 
-def derive_overall_status(service_results: Dict[str, Dict[str, Any]]) -> str:
+def derive_overall_status(service_results: dict[str, dict[str, Any]]) -> str:
     priority = {
         "healthy": 0,
         "skipped": 1,
@@ -152,22 +152,22 @@ def derive_overall_status(service_results: Dict[str, Dict[str, Any]]) -> str:
     return "healthy"
 
 
-def basic_health_payload() -> Dict[str, Any]:
+def basic_health_payload() -> dict[str, Any]:
     return {
         "status": "ok",
         "environment": getattr(settings, "ENVIRONMENT", "unknown"),
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
 
-def ready_health_payload() -> Tuple[Dict[str, Any], int]:
+def ready_health_payload() -> tuple[dict[str, Any], int]:
     results = gather_service_statuses()
     overall_status = derive_overall_status(results)
     status_code = 503 if overall_status == "unhealthy" else 200
     payload = {
         "status": overall_status,
         "environment": getattr(settings, "ENVIRONMENT", "unknown"),
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "services": results,
     }
     return payload, status_code

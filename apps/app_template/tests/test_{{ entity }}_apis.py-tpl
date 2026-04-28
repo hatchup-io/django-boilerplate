@@ -1,0 +1,52 @@
+"""
+Smoke tests for {{ Entity }} CRUD endpoints.
+
+Demonstrates the conventional test shape:
+- pytest functions (not Django TestCase)
+- shared fixtures from root conftest.py: `api_client`, `auth_client`, `user`
+- per-app factories
+- envelope-aware assertions via `_payload_data(response)`
+"""
+
+from __future__ import annotations
+
+import pytest
+
+from apps.{{ app_name }}.tests.factories import {{ Entity }}Factory
+
+pytestmark = pytest.mark.django_db
+
+
+def _payload_data(response):
+    body = response.json()
+    return body.get("data", body)
+
+
+def test_list_{{ entity }}s_requires_authentication(api_client):
+    response = api_client.get("/api/{{ app_name }}/")
+    assert response.status_code in (401, 403)
+
+
+def test_list_{{ entity }}s_returns_paginated_envelope(auth_client):
+    {{ Entity }}Factory.create_batch(3)
+
+    response = auth_client.get("/api/{{ app_name }}/")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == 200
+    assert "pagination" in body
+    assert isinstance(body["data"], list)
+    assert len(body["data"]) == 3
+
+
+def test_create_{{ entity }}(auth_client):
+    response = auth_client.post(
+        "/api/{{ app_name }}/",
+        {"name": "Example", "description": "An example {{ entity }}."},
+        format="json",
+    )
+
+    assert response.status_code == 201
+    data = _payload_data(response)
+    assert data["name"] == "Example"

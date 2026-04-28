@@ -4,7 +4,6 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -47,6 +46,7 @@ INSTALLED_APPS = [
     "apps.auth.apps.AuthConfig",
     "apps.notification.apps.NotificationConfig",
     "apps.document.apps.DocumentConfig",
+    "apps.messaging.apps.MessagingConfig",
 ]
 
 # Custom user model
@@ -114,9 +114,7 @@ WSGI_APPLICATION = "core.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-_IS_TEST_RUN = "pytest" in " ".join(sys.argv) or (
-    len(sys.argv) > 1 and sys.argv[1] == "test"
-)
+_IS_TEST_RUN = "pytest" in " ".join(sys.argv) or (len(sys.argv) > 1 and sys.argv[1] == "test")
 
 if _IS_TEST_RUN:
     _test_db_name = os.getenv("TEST_DB_NAME", os.getenv("DB_NAME", "postgres"))
@@ -125,9 +123,7 @@ if _IS_TEST_RUN:
             "ENGINE": "django.db.backends.postgresql",
             "NAME": _test_db_name,
             "USER": os.getenv("TEST_DB_USER", os.getenv("DB_USER", "postgres")),
-            "PASSWORD": os.getenv(
-                "TEST_DB_PASSWORD", os.getenv("DB_PASSWORD", "postgres")
-            ),
+            "PASSWORD": os.getenv("TEST_DB_PASSWORD", os.getenv("DB_PASSWORD", "postgres")),
             "HOST": os.getenv("TEST_DB_HOST", os.getenv("DB_HOST", "localhost")),
             "PORT": os.getenv("TEST_DB_PORT", os.getenv("DB_PORT", "5432")),
             "TEST": {"NAME": _test_db_name},
@@ -190,16 +186,10 @@ X_FRAME_OPTIONS = "DENY"
 # Email (for OTP, notifications)
 if _IS_TEST_RUN:
     EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
-    OTP_EMAIL_ASYNC_SEND = False
 else:
     EMAIL_BACKEND = os.getenv(
         "EMAIL_BACKEND",
         "django.core.mail.backends.console.EmailBackend",
-    )
-    OTP_EMAIL_ASYNC_SEND = os.getenv("OTP_EMAIL_ASYNC_SEND", "true").lower() in (
-        "true",
-        "1",
-        "yes",
     )
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@example.com")
 
@@ -228,23 +218,14 @@ AWS_ACCESS_KEY_ID = os.getenv("RUSTFS_ACCESS_KEY", "")
 AWS_SECRET_ACCESS_KEY = os.getenv("RUSTFS_SECRET_KEY", "")
 AWS_STORAGE_BUCKET_NAME = os.getenv("RUSTFS_BUCKET_NAME", "")
 AWS_S3_REGION_NAME = os.getenv("RUSTFS_REGION", "us-east-1")
-AWS_S3_ENDPOINT_URL = (
-    f"{'https' if RUSTFS_USE_HTTPS else 'http'}://{RUSTFS_ENDPOINT}"
-    if RUSTFS_ENDPOINT
-    else None
-)
+AWS_S3_ENDPOINT_URL = f"{'https' if RUSTFS_USE_HTTPS else 'http'}://{RUSTFS_ENDPOINT}" if RUSTFS_ENDPOINT else None
 AWS_S3_SIGNATURE_VERSION = "s3v4"
 AWS_S3_ADDRESSING_STYLE = "path"
 AWS_DEFAULT_ACL = None
 AWS_QUERYSTRING_AUTH = False
 AWS_S3_FILE_OVERWRITE = False
 
-_RUSTFS_READY = bool(
-    RUSTFS_ENDPOINT
-    and AWS_STORAGE_BUCKET_NAME
-    and AWS_ACCESS_KEY_ID
-    and AWS_SECRET_ACCESS_KEY
-)
+_RUSTFS_READY = bool(RUSTFS_ENDPOINT and AWS_STORAGE_BUCKET_NAME and AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)
 
 if _RUSTFS_READY:
     _S3_OPTIONS = {
@@ -290,9 +271,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "local")
 
-from .packages import REST_FRAMEWORK  # noqa: E402
-from .packages.cors import *  # noqa: E402, F403
-from .packages.simple_jwt import SIMPLE_JWT  # noqa: E402
-from .packages.sentry import init_sentry  # noqa: E402
+from .packages.cors import *
+from .packages.sentry import init_sentry
 
 init_sentry(environment=ENVIRONMENT)

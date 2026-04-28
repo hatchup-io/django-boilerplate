@@ -8,9 +8,7 @@ def base_schema_response(message):
         response=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                "message": openapi.Schema(
-                    type=openapi.TYPE_STRING, description=message
-                ),
+                "message": openapi.Schema(type=openapi.TYPE_STRING, description=message),
                 "status": openapi.Schema(
                     type=openapi.TYPE_INTEGER,
                     description="HTTP status code, e.g., 200 for success or 400 for failure",

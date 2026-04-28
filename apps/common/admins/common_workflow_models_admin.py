@@ -1,11 +1,10 @@
 from django.contrib import admin
 
-from apps.common.admins.base import _HatchUpBaseAdmin, admin_site
-from apps.common.models.common_workflow_models import (
-    WorkflowStage,
-    WorkflowState,
-    WorkflowTransition,
-)
+from apps.common.admins.base import _HatchUpBaseAdmin
+from apps.common.admins.base import admin_site
+from apps.common.models.common_workflow_models import WorkflowStage
+from apps.common.models.common_workflow_models import WorkflowState
+from apps.common.models.common_workflow_models import WorkflowTransition
 
 
 @admin.register(WorkflowStage, site=admin_site)

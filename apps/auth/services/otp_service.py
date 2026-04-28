@@ -4,10 +4,9 @@ import logging
 import secrets
 import string
 
-from django.conf import settings
 from django.core.cache import cache
 
-from apps.notification.services.email_service import EmailService
+from apps.notification.services.email_service import send_otp_email as send_otp_via_email
 
 logger = logging.getLogger(__name__)
 
@@ -87,14 +86,18 @@ def consume_verification_id(verification_id: str) -> dict | None:
     return payload
 
 
-def send_otp_email(email: str, otp: str, purpose: str, async_send: bool | None = None) -> bool:
-    """Send OTP via email. Uses EmailService with async delivery by default."""
-    if async_send is None:
-        async_send = getattr(settings, "OTP_EMAIL_ASYNC_SEND", True)
-    return EmailService.send_otp_email(
-        email=email,
-        otp_code=otp,
-        purpose=purpose,
-        user_type="client",
-        async_send=async_send,
-    )
+def send_otp_email(email: str, otp: str, purpose: str) -> None:
+    """Send OTP via email. Synchronous; see notification.email_service for production guidance."""
+    send_otp_via_email(email=email, otp_code=otp, purpose=purpose)
+
+
+def request_otp(email: str, purpose: str) -> None:
+    """
+    Generate, store, and send an OTP for the given (email, purpose).
+
+    Single entry point so views and other callers don't repeat the orchestration.
+    """
+    email_clean = email.strip().lower()
+    otp = generate_otp()
+    store_otp(email_clean, otp, purpose)
+    send_otp_email(email_clean, otp, purpose)

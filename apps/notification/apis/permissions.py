@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from rest_framework.permissions import BasePermission
 
-from apps.auth.services.roles import has_any_role, is_platform_admin
+from apps.auth.services.roles import has_any_role
+from apps.auth.services.roles import is_platform_admin
 
 
 class NotificationEndpointPermission(BasePermission):

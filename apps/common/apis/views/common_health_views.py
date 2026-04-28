@@ -1,10 +1,9 @@
-from apps.common.apis.views.common_base_views import HatchupAPIView
-from apps.common.utils.common_health_check_utils import (
-    basic_health_payload,
-    ready_health_payload,
-)
-from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
+from rest_framework.response import Response
+
+from apps.common.apis.views.common_base_views import HatchupAPIView
+from apps.common.utils.common_health_check_utils import basic_health_payload
+from apps.common.utils.common_health_check_utils import ready_health_payload
 
 
 class HatchupHealthCheckView(HatchupAPIView):

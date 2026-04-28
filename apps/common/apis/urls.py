@@ -1,11 +1,8 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from apps.common.apis.views.common_health_views import (
-    HatchupHealthCheckView,
-    HatchupReadinessView,
-)
-
+from apps.common.apis.views.common_health_views import HatchupHealthCheckView
+from apps.common.apis.views.common_health_views import HatchupReadinessView
 
 router = DefaultRouter()
 

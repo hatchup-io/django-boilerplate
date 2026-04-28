@@ -15,7 +15,7 @@ class TokenObtainSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs):
-        data = super().validate(attrs)
+        super().validate(attrs)
         return generate_token_for_user(self.user)
 
 

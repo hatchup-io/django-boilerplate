@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Group
+from django.contrib.auth.models import Permission
 from django.core.cache import cache
 
 ROLE_CACHE_TTL_SECONDS = 60
@@ -70,7 +71,7 @@ def get_user_roles(user) -> set[str]:
     if cached is not None:
         return set(cached)
 
-    role_names = set(user.groups.values_list("name", flat=True))
+    role_names = set(user.roles.values_list("name", flat=True))
     cache.set(key, list(role_names), timeout=ROLE_CACHE_TTL_SECONDS)
     return role_names
 

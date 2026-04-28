@@ -22,6 +22,13 @@ class UserSerializer(BaseUserSerializer):
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
+    """
+    DTO for user registration.
+
+    Schema-level validation only. Business rules (uniqueness, side effects) live in
+    `apps.users.services.create_user_services.create_user`.
+    """
+
     password = serializers.CharField(write_only=True, min_length=8)
 
     class Meta:
@@ -34,17 +41,5 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "last_name",
         ]
 
-    def validate_email(self, value):
-        email = value.strip().lower()
-        if User.objects.filter(email__iexact=email).exists():
-            raise serializers.ValidationError(
-                "This email cannot be used for registration."
-            )
-        return email
-
-    def create(self, validated_data):
-        password = validated_data.pop("password")
-        email = validated_data["email"]
-        return User.objects.create_user(
-            email=email, password=password, **validated_data
-        )
+    def validate_email(self, value: str) -> str:
+        return value.strip().lower()

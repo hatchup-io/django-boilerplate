@@ -1,0 +1,16 @@
+"""
+TextChoices / IntegerChoices for the {{ app_name }} app.
+
+Per `.cursorrules`: model field choices live here, not inline in models.
+Import the choices in your model file.
+"""
+
+from __future__ import annotations
+
+from django.db import models
+
+
+class {{ Entity }}StatusChoices(models.TextChoices):
+    DRAFT = "draft", "Draft"
+    ACTIVE = "active", "Active"
+    ARCHIVED = "archived", "Archived"

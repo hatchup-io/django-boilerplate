@@ -4,13 +4,12 @@ from django.contrib.auth import get_user_model
 from django.db.models import Count
 from rest_framework import serializers
 
+from apps.auth.services.roles import get_user_roles
+from apps.auth.services.roles import is_platform_admin
 from apps.common.apis.serializers.fields import Base64FileField
-from apps.auth.services.roles import get_user_roles, is_platform_admin
-from apps.messaging.models.messaging_models import (
-    Conversation,
-    ConversationParticipant,
-    Message,
-)
+from apps.messaging.models.messaging_models import Conversation
+from apps.messaging.models.messaging_models import ConversationParticipant
+from apps.messaging.models.messaging_models import Message
 
 User = get_user_model()
 
@@ -44,7 +43,7 @@ class UserSummarySerializer(serializers.ModelSerializer):
         fields = ("id", "email", "first_name", "last_name", "role_names")
 
     def get_role_names(self, obj) -> list[str]:
-        return list(obj.groups.values_list("name", flat=True))
+        return list(obj.roles.values_list("name", flat=True))
 
 
 class ConversationSerializer(serializers.ModelSerializer):
@@ -73,9 +72,7 @@ class ConversationCreateSerializer(serializers.ModelSerializer):
     def validate_participant_id(self, value: int) -> int:
         request = self.context.get("request")
         if request and getattr(request, "user", None) and request.user.id == value:
-            raise serializers.ValidationError(
-                "You cannot start a conversation with yourself."
-            )
+            raise serializers.ValidationError("You cannot start a conversation with yourself.")
         return value
 
     def validate(self, attrs):
@@ -87,8 +84,8 @@ class ConversationCreateSerializer(serializers.ModelSerializer):
         participant_id = attrs.get("participant_id")
         try:
             participant = User.objects.get(id=participant_id)
-        except User.DoesNotExist:
-            raise serializers.ValidationError({"participant_id": "User not found."})
+        except User.DoesNotExist as exc:
+            raise serializers.ValidationError({"participant_id": "User not found."}) from exc
 
         if not _allowed_conversation(request.user, participant):
             raise serializers.ValidationError(
@@ -149,20 +146,14 @@ class MessageCreateSerializer(serializers.ModelSerializer):
         if not request or not conversation:
             raise serializers.ValidationError("Request context is required.")
 
-        is_participant = ConversationParticipant.objects.filter(
-            conversation=conversation, user=request.user
-        ).exists()
+        is_participant = ConversationParticipant.objects.filter(conversation=conversation, user=request.user).exists()
         if not is_participant:
-            raise serializers.ValidationError(
-                "You are not a participant in this conversation."
-            )
+            raise serializers.ValidationError("You are not a participant in this conversation.")
 
         content = attrs.get("content", "")
         file_obj = attrs.get("file")
         if not content and not file_obj:
-            raise serializers.ValidationError(
-                "Message must include content or a file attachment."
-            )
+            raise serializers.ValidationError("Message must include content or a file attachment.")
         attrs["content"] = content
         return attrs
 

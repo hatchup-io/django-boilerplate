@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from typing import Iterable, Type
+from collections.abc import Iterable
 
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
-from django.db.models import Model, QuerySet
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Model
+from django.db.models import QuerySet
 
-from apps.auth.services.roles import is_platform_admin
 from apps.auth.models.object_permission_models import UserObjectPermission
+from apps.auth.services.roles import is_platform_admin
 
 User = get_user_model()
 
@@ -16,7 +17,7 @@ def _model_perm(app_label: str, codename: str) -> str:
     return f"{app_label}.{codename}"
 
 
-def default_object_perms_for_model(model: Type[Model]) -> tuple[str, str, str]:
+def default_object_perms_for_model(model: type[Model]) -> tuple[str, str, str]:
     """
     Default object-level permissions we assign to owners.
 
@@ -77,9 +78,9 @@ def filter_queryset_by_object_perm(
 
     model = queryset.model
     ct = ContentType.objects.get_for_model(model, for_concrete_model=False)
-    allowed_ids = UserObjectPermission.objects.filter(
-        user=user, content_type=ct, perm_codename=perm
-    ).values_list("object_id", flat=True)
+    allowed_ids = UserObjectPermission.objects.filter(user=user, content_type=ct, perm_codename=perm).values_list(
+        "object_id", flat=True
+    )
     # Single SQL query with a subquery; avoids N+1 checks.
     return queryset.filter(pk__in=allowed_ids)
 

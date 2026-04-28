@@ -4,13 +4,11 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.db import models
 from django.db.models import Q
-from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from apps.common.models.common_base_models import HatchUpBaseModel
-from apps.notification.configs.constants.notification_enums import (
-    NotificationCategoryChoices,
-)
+from apps.notification.configs.constants.notification_enums import NotificationCategoryChoices
 
 
 class Notification(HatchUpBaseModel):
@@ -47,7 +45,7 @@ class Notification(HatchUpBaseModel):
         return bool(self.expires_at and self.expires_at <= timezone.now())
 
     @classmethod
-    def visible_to_user_queryset(cls, user) -> models.QuerySet["Notification"]:
+    def visible_to_user_queryset(cls, user) -> models.QuerySet[Notification]:
         """
         Return notifications visible to `user` (by global/user/role targets), excluding expired.
         """
@@ -55,7 +53,7 @@ class Notification(HatchUpBaseModel):
         if not getattr(user, "is_authenticated", False):
             return cls.objects.none()
 
-        roles = user.groups.all()
+        roles = user.roles.all()
         # Direct user audience is represented by a NotificationUser row for that user.
         q = Q(is_global=True) | Q(user_states__user=user)
         if roles:
@@ -83,11 +81,7 @@ class NotificationRoleTarget(HatchUpBaseModel):
     class Meta:
         verbose_name = "Notification Role Target"
         verbose_name_plural = "Notification Role Targets"
-        constraints = [
-            models.UniqueConstraint(
-                fields=("notification", "role"), name="uniq_notification_role_target"
-            )
-        ]
+        constraints = [models.UniqueConstraint(fields=("notification", "role"), name="uniq_notification_role_target")]
 
     def __str__(self) -> str:
         return f"{self.notification_id} -> role:{self.role_id_id}"
@@ -112,11 +106,7 @@ class NotificationUser(HatchUpBaseModel):
     class Meta:
         verbose_name = "Notification User"
         verbose_name_plural = "Notification Users"
-        constraints = [
-            models.UniqueConstraint(
-                fields=("notification", "user"), name="uniq_notification_user"
-            )
-        ]
+        constraints = [models.UniqueConstraint(fields=("notification", "user"), name="uniq_notification_user")]
 
     def __str__(self) -> str:
         if hasattr(self.user, "full_name"):

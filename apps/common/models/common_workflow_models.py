@@ -1,4 +1,8 @@
-"""Merged state and workflow models: StateTransitionLog, StateTransitionMixin, WorkflowStage, WorkflowState, WorkflowTransition."""
+"""Merged state and workflow models.
+
+Defines: StateTransitionLog, StateTransitionMixin, WorkflowStage, WorkflowState,
+WorkflowTransition.
+"""
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -53,9 +57,7 @@ class StateTransitionMixin(models.Model):
     def _has_model_field(self, field_name: str) -> bool:
         return any(field.name == field_name for field in self._meta.fields)
 
-    def record_transition(
-        self, *, from_state: str, to_state: str, transition: str, by=None, notes=None
-    ):
+    def record_transition(self, *, from_state: str, to_state: str, transition: str, by=None, notes=None):
         def _normalize_state(value):
             if hasattr(value, "code"):
                 return value.code
@@ -70,30 +72,16 @@ class StateTransitionMixin(models.Model):
             notes=notes or "",
         )
 
-    def apply_transition(
-        self, transition_name: str, *, by=None, notes=None, state_field=None, **kwargs
-    ):
+    def apply_transition(self, transition_name: str, *, by=None, notes=None, state_field=None, **kwargs):
         transition_method = getattr(self, transition_name, None)
         if transition_method is None:
             raise ValidationError(f"Unknown transition '{transition_name}'.")
-        resolved_field = state_field or getattr(
-            self, "transition_state_fields", {}
-        ).get(transition_name)
+        resolved_field = state_field or getattr(self, "transition_state_fields", {}).get(transition_name)
         if not can_proceed(transition_method):
-            raise ValidationError(
-                f"Transition '{transition_name}' is not allowed from '{self.state}'."
-            )
-        from_state = (
-            getattr(self, resolved_field)
-            if resolved_field
-            else getattr(self, "state", None)
-        )
+            raise ValidationError(f"Transition '{transition_name}' is not allowed from '{self.state}'.")
+        from_state = getattr(self, resolved_field) if resolved_field else getattr(self, "state", None)
         transition_method(by=by, notes=notes, **kwargs)
-        to_state = (
-            getattr(self, resolved_field)
-            if resolved_field
-            else getattr(self, "state", None)
-        )
+        to_state = getattr(self, resolved_field) if resolved_field else getattr(self, "state", None)
         update_fields = []
         if resolved_field:
             update_fields.append(resolved_field)
@@ -123,11 +111,7 @@ class WorkflowStage(HatchUpBaseModel):
         verbose_name = _("Workflow stage")
         verbose_name_plural = _("Workflow stages")
         ordering = ["scope", "code"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["scope", "code"], name="uniq_workflow_stage_scope"
-            )
-        ]
+        constraints = [models.UniqueConstraint(fields=["scope", "code"], name="uniq_workflow_stage_scope")]
 
     def __str__(self) -> str:
         return f"{self.scope}:{self.code}"
@@ -147,11 +131,7 @@ class WorkflowState(HatchUpBaseModel):
         verbose_name = _("Workflow state")
         verbose_name_plural = _("Workflow states")
         ordering = ["scope", "stage__code", "code"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["scope", "code"], name="uniq_workflow_state_scope"
-            )
-        ]
+        constraints = [models.UniqueConstraint(fields=["scope", "code"], name="uniq_workflow_state_scope")]
 
     def __str__(self) -> str:
         return f"{self.scope}:{self.code}"

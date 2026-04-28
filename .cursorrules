@@ -7,20 +7,25 @@ This project is a Django 6 REST API backend with DRF, JWT auth, Redis cache, Pos
 ### Main Documentation
 
 -   Project Rules: .cursorrules (this file)
+-   Architecture overview: docs/ARCHITECTURE.md
+-   Conventions (long form): docs/CONVENTIONS.md
 -   App Template: apps/app_template/ (scaffolding for new apps)
 -   Settings: core/settings.py
 -   Base Views: apps/common/apis/views/common_base_views.py
 -   Base Models: apps/common/models/common_base_models.py
+-   Domain Exceptions: apps/common/exceptions.py
 
 ### Key Principles
 
 1. **Base Classes First** - Inherit from HatchUpBaseModel, HatchupAPIView/HatchupModelViewset
 2. **Services Layer** - Non-trivial business logic in `services/`, views stay thin
-3. **OpenAPI Everywhere** - Use `@extend_schema` / `@extend_schema_view` on all endpoints
-4. **Custom Admin Site** - Register with `admin_site`, extend `_HatchUpBaseAdmin`
-5. **Response Envelope** - All API responses wrapped as `{ message, status, pagination, data }`
-6. **Soft Delete** - Use `HatchUpBaseManager`; prefer `is_active`/`is_deleted` over hard delete
-7. **Enums/Choices in Config** - Put model field choices (e.g. `TextChoices`, `IntegerChoices`) in `configs/constants/` (one file per domain, e.g. `type_enums.py`, `workflow_enums.py`); import in models from there. Do not define choices inline in model files.
+3. **Domain Exceptions** - Services raise `apps.common.exceptions.{DomainError, NotFoundError, ConflictError, BusinessRuleError, PermissionDeniedError}` instead of generic APIException; the exception handler maps them to envelope responses
+4. **OpenAPI Everywhere** - Use `@extend_schema` / `@extend_schema_view` on all endpoints; `HatchupAutoSchema` already wraps 2xx response schemas in the envelope
+5. **Custom Admin Site** - Register with `admin_site`, extend `_HatchUpBaseAdmin`
+6. **Response Envelope** - All API responses wrapped as `{ message, status, pagination, data }`; error responses surface their `detail` or first field error as the envelope `message`
+7. **Soft Delete** - Use `HatchUpBaseManager`; prefer `is_active`/`is_deleted` over hard delete
+8. **Enums/Choices in Config** - Put model field choices (e.g. `TextChoices`, `IntegerChoices`) in `configs/constants/` (one file per domain, e.g. `type_enums.py`, `workflow_enums.py`); import in models from there. Do not define choices inline in model files.
+9. **No Async Hacks** - The template ships no task queue. Do not use `threading.Thread` for fire-and-forget work; either call synchronously or add a real queue (Celery, RQ, dramatiq, django-q) at deploy time.
 
 ### Tech Stack
 

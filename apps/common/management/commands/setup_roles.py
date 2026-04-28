@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for name in BASE_ROLE_NAMES:
-            group, created = Group.objects.get_or_create(name=name)
+            _group, created = Group.objects.get_or_create(name=name)
             if created:
                 self.stdout.write(self.style.SUCCESS(f"Created group: {name}"))
             else:

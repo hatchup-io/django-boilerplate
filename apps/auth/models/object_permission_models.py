@@ -27,9 +27,7 @@ class UserObjectPermission(HatchUpBaseModel):
         related_name="object_perms",
         db_index=True,
     )
-    content_type = models.ForeignKey(
-        ContentType, on_delete=models.CASCADE, db_index=True
-    )
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, db_index=True)
     object_id = models.BigIntegerField(db_index=True)
     perm_codename = models.CharField(max_length=255, db_index=True)
 

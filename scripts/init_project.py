@@ -100,9 +100,7 @@ def main() -> int:
     if args.dry_run:
         print("Dry run. Would set:")
         print(json.dumps(config, indent=2))
-        print(
-            "Would copy .env.example to .env (if .env missing) and run poetry install."
-        )
+        print("Would copy .env.example to .env (if .env missing) and run poetry install.")
         return 0
 
     print(f"Configuring project: {project_name}")

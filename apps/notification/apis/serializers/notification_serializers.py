@@ -4,14 +4,10 @@ from django.contrib.auth.models import Group
 from django.utils import timezone
 from rest_framework import serializers
 
-from apps.notification.configs.constants.notification_enums import (
-    NotificationCategoryChoices,
-)
-from apps.notification.models.notification_models import (
-    Notification,
-    NotificationRoleTarget,
-    NotificationUser,
-)
+from apps.notification.configs.constants.notification_enums import NotificationCategoryChoices
+from apps.notification.models.notification_models import Notification
+from apps.notification.models.notification_models import NotificationRoleTarget
+from apps.notification.models.notification_models import NotificationUser
 from apps.users.models.users_user_models import User
 
 
@@ -58,15 +54,11 @@ class NotificationAdminCreateSerializer(serializers.ModelSerializer):
     - `target_role_names=[...]` -> role-based (Django Group names)
     """
 
-    category = serializers.ChoiceField(
-        choices=NotificationCategoryChoices.choices, required=False
-    )
+    category = serializers.ChoiceField(choices=NotificationCategoryChoices.choices, required=False)
     target_user_ids = serializers.ListField(
         child=serializers.IntegerField(min_value=1), required=False, allow_empty=True
     )
-    target_role_names = serializers.ListField(
-        child=serializers.CharField(), required=False, allow_empty=True
-    )
+    target_role_names = serializers.ListField(child=serializers.CharField(), required=False, allow_empty=True)
 
     class Meta:
         model = Notification
@@ -88,11 +80,7 @@ class NotificationAdminCreateSerializer(serializers.ModelSerializer):
         attrs = super().validate(attrs)
         is_global = bool(attrs.get("is_global"))
         target_user_ids = attrs.get("target_user_ids") or []
-        target_role_names = [
-            str(x).strip()
-            for x in (attrs.get("target_role_names") or [])
-            if str(x).strip()
-        ]
+        target_role_names = [str(x).strip() for x in (attrs.get("target_role_names") or []) if str(x).strip()]
 
         if not is_global and not target_user_ids and not target_role_names:
             raise serializers.ValidationError(
@@ -136,9 +124,7 @@ class MarkAsReadSerializer(serializers.Serializer):
     def save(self, *, user: User, notification: Notification) -> NotificationUser:
         read = bool(self.validated_data.get("read", True))
         now = timezone.now()
-        state, _ = NotificationUser.objects.get_or_create(
-            user=user, notification=notification
-        )
+        state, _ = NotificationUser.objects.get_or_create(user=user, notification=notification)
         state.read_at = now if read else None
         state.save(update_fields=["read_at", "updated_at"])
         return state

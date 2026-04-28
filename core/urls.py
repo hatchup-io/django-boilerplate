@@ -1,12 +1,11 @@
 from django.conf import settings
-from django.urls import include, path
-from drf_spectacular.views import (
-    SpectacularAPIView,
-    SpectacularSwaggerView,
-)
+from django.conf.urls.static import static
+from django.urls import include
+from django.urls import path
+from drf_spectacular.views import SpectacularAPIView
+from drf_spectacular.views import SpectacularSwaggerView
 
 from apps.common.admins import admin_site
-from django.conf.urls.static import static
 
 THIRD_PARTY_URLS = [
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
@@ -23,6 +22,7 @@ APP_URLS = [
     path("auth/", include("apps.auth.apis.urls")),
     path("users/", include("apps.users.apis.urls")),
     path("document/", include("apps.document.apis.urls")),
+    path("messaging/", include("apps.messaging.apis.urls")),
 ]
 
 

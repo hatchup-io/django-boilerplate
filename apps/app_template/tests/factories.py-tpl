@@ -1,0 +1,20 @@
+"""
+factory_boy factories for the {{ app_name }} app.
+
+Used by per-app tests and (optionally) by other apps' tests via fixtures.
+"""
+
+from __future__ import annotations
+
+import factory
+from factory.django import DjangoModelFactory
+
+from apps.{{ app_name }}.models.{{ app_name }}_{{ entity }}_models import {{ Entity }}
+
+
+class {{ Entity }}Factory(DjangoModelFactory):
+    class Meta:
+        model = {{ Entity }}
+
+    name = factory.Sequence(lambda n: f"{{ entity }}-{n}")
+    description = factory.Faker("sentence")

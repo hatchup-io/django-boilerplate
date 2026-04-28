@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import os
 import uuid
+from pathlib import PurePosixPath
 
 from django.conf import settings
 from django.db import models
@@ -9,10 +9,9 @@ from django.db import models
 from apps.common.models.common_base_models import HatchUpBaseModel
 
 
-def message_file_upload_to(instance: "Message", filename: str) -> str:
-    safe_name = os.path.basename(filename or "")
-    _, ext = os.path.splitext(safe_name)
-    ext = (ext or "").lower()
+def message_file_upload_to(instance: Message, filename: str) -> str:
+    name = PurePosixPath(filename or "").name
+    ext = PurePosixPath(name).suffix.lower()
     unique_id = uuid.uuid4().hex
     conversation_id = instance.conversation_id or "unknown"
     return f"messages/{conversation_id}/{unique_id}{ext}"
@@ -57,11 +56,7 @@ class ConversationParticipant(HatchUpBaseModel):
     class Meta:
         verbose_name = "Conversation Participant"
         verbose_name_plural = "Conversation Participants"
-        constraints = [
-            models.UniqueConstraint(
-                fields=("conversation", "user"), name="uniq_conversation_participant"
-            )
-        ]
+        constraints = [models.UniqueConstraint(fields=("conversation", "user"), name="uniq_conversation_participant")]
 
     def __str__(self) -> str:
         return f"Conversation {self.conversation_id} -> User {self.user_id}"

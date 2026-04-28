@@ -1,9 +1,10 @@
 from django.contrib import admin
+from django.contrib.auth.admin import Group
+from django.contrib.auth.admin import GroupAdmin
 
+from apps.common.admins.base import _HatchUpBaseAdmin
+from apps.common.admins.base import admin_site
 from apps.users.models.users_role_models import UserRole
-
-from apps.common.admins.base import _HatchUpBaseAdmin, admin_site
-from django.contrib.auth.admin import GroupAdmin, Group
 
 
 @admin.register(Group, site=admin_site)

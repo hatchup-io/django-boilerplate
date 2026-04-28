@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from typing import Dict, List, Type
-
 from django.db.models import Model
 
 
-def crud_object_perms_map(model: Type[Model]) -> Dict[str, List[str]]:
+def crud_object_perms_map(model: type[Model]) -> dict[str, list[str]]:
     """
     Build a standard CRUD permission map for a model.
 

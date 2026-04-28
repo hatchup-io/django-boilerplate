@@ -1,73 +1,69 @@
+from __future__ import annotations
+
+import pytest
 from django.contrib.auth import get_user_model
-from django.test import TestCase
-from rest_framework.test import APIClient
+
+from apps.users.tests.factories import UserFactory
 
 User = get_user_model()
 
+pytestmark = pytest.mark.django_db
 
-class UserAuthenticationBoilerplateTests(TestCase):
-    def setUp(self):
-        self.client = APIClient()
 
-    def test_register_user(self):
-        payload = {
-            "email": "new.user@test.com",
-            "password": "securepass123",
-            "phone_number": "1000000000",
-            "first_name": "New",
-            "last_name": "User",
-        }
+def _payload_data(response):
+    body = response.json()
+    return body.get("data", body)
 
-        response = self.client.post("/api/users/register/", payload, format="json")
 
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()["email"], payload["email"])
-        self.assertNotIn("password", response.json())
+def test_register_user(api_client):
+    payload = {
+        "email": "new.user@test.com",
+        "password": "securepass123",
+        "phone_number": "1000000000",
+        "first_name": "New",
+        "last_name": "User",
+    }
 
-        created_user = User.objects.get(email=payload["email"])
-        self.assertTrue(created_user.check_password(payload["password"]))
+    response = api_client.post("/api/users/register/", payload, format="json")
 
-    def test_login_and_refresh_tokens(self):
-        user = User(
-            email="member@test.com",
-            phone_number="1000000001",
-            first_name="Member",
-            last_name="User",
-        )
-        user.set_password("strongpass123")
-        user.save()
+    assert response.status_code == 201
+    data = _payload_data(response)
+    assert data["email"] == payload["email"]
+    assert "password" not in data
 
-        login_response = self.client.post(
-            "/api/auth/token/",
-            {"email": user.email, "password": "strongpass123"},
-            format="json",
-        )
-        self.assertEqual(login_response.status_code, 200)
-        self.assertIn("access", login_response.json())
-        self.assertIn("refresh", login_response.json())
+    created_user = User.objects.get(email=payload["email"])
+    assert created_user.check_password(payload["password"])
 
-        refresh_response = self.client.post(
-            "/api/auth/token/refresh/",
-            {"refresh": login_response.json()["refresh"]},
-            format="json",
-        )
-        self.assertEqual(refresh_response.status_code, 200)
-        self.assertIn("access", refresh_response.json())
 
-    def test_current_user_requires_authentication(self):
-        response = self.client.get("/api/users/me/")
-        self.assertIn(response.status_code, (401, 403))
+def test_login_and_refresh_tokens(api_client):
+    user = UserFactory(email="member@test.com", password="strongpass123")
 
-    def test_current_user_returns_authenticated_user(self):
-        user = User.objects.create(
-            email="current@test.com",
-            phone_number="1000000002",
-            first_name="Current",
-            last_name="User",
-        )
+    login_response = api_client.post(
+        "/api/auth/token/",
+        {"email": user.email, "password": "strongpass123"},
+        format="json",
+    )
+    assert login_response.status_code == 200
+    login_data = _payload_data(login_response)
+    assert "access" in login_data
+    assert "refresh" in login_data
 
-        self.client.force_authenticate(user=user)
-        response = self.client.get("/api/users/me/")
+    refresh_response = api_client.post(
+        "/api/auth/token/refresh/",
+        {"refresh": login_data["refresh"]},
+        format="json",
+    )
+    assert refresh_response.status_code == 200
+    assert "access" in _payload_data(refresh_response)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["email"], user.email)
+
+def test_current_user_requires_authentication(api_client):
+    response = api_client.get("/api/users/me/")
+    assert response.status_code in (401, 403)
+
+
+def test_current_user_returns_authenticated_user(auth_client, user):
+    response = auth_client.get("/api/users/me/")
+
+    assert response.status_code == 200
+    assert _payload_data(response)["email"] == user.email

@@ -12,9 +12,7 @@ User = get_user_model()
 
 class HatchupJWTAuthentication(JWTAuthentication):
     def authenticate(self, request) -> tuple | None:
-        auth_header = request.META.get("HTTP_AUTHORIZATION", "") or request.META.get(
-            "Authorization", ""
-        )
+        auth_header = request.META.get("HTTP_AUTHORIZATION", "") or request.META.get("Authorization", "")
         if not auth_header:
             return None
 
@@ -60,11 +58,7 @@ class HatchupAuthenticationScheme(OpenApiAuthenticationExtension):
 
     def get_security_definition(self, auto_schema):
         auth_header_types = jwt_api_settings.AUTH_HEADER_TYPES
-        token_prefix = (
-            auth_header_types[0]
-            if isinstance(auth_header_types, (list, tuple))
-            else auth_header_types
-        )
+        token_prefix = auth_header_types[0] if isinstance(auth_header_types, (list, tuple)) else auth_header_types
         return build_bearer_security_scheme_object(
             header_name="Authorization",
             token_prefix=token_prefix,

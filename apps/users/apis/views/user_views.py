@@ -4,10 +4,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.common.apis.views.common_base_views import HatchupAPIView
-from apps.users.apis.serializers.user_serializers import (
-    UserRegisterSerializer,
-    UserSerializer,
-)
+from apps.users.apis.serializers.user_serializers import UserRegisterSerializer
+from apps.users.apis.serializers.user_serializers import UserSerializer
+from apps.users.services.create_user_services import create_user
 
 
 class UserRegisterAPIView(HatchupAPIView):
@@ -24,7 +23,7 @@ class UserRegisterAPIView(HatchupAPIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        user = create_user(**serializer.validated_data)
         return Response(
             UserSerializer(user, context=self.get_serializer_context()).data,
             status=status.HTTP_201_CREATED,

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from rest_framework.permissions import BasePermission
 
 from apps.auth.services.object_permissions import user_has_object_perms
-from apps.auth.services.roles import has_any_role, is_platform_admin
+from apps.auth.services.roles import has_any_role
+from apps.auth.services.roles import is_platform_admin
 
 
 class IsAdminRole(BasePermission):
@@ -51,9 +52,7 @@ class DenyIfRoleNotAllowedForEndpoint(BasePermission):
         # Support both names for backwards compatibility:
         # - `allowed_groups`: preferred (roles == group names)
         # - `allowed_roles`: legacy
-        allowed = getattr(view, "allowed_groups", None) or getattr(
-            view, "allowed_roles", None
-        )
+        allowed = getattr(view, "allowed_groups", None) or getattr(view, "allowed_roles", None)
         if not allowed:
             # Explicit by default: if the view didn't declare its boundary, deny.
             return False
@@ -80,17 +79,11 @@ class HasObjectPermission(BasePermission):
             return True
 
         action = getattr(view, "action", None) or ""
-        perms_map = (
-            getattr(view, "object_perms_map", None)
-            or getattr(view, "guardian_perms_map", None)
-            or {}
-        )
+        perms_map = getattr(view, "object_perms_map", None) or getattr(view, "guardian_perms_map", None) or {}
         required = perms_map.get(action) or perms_map.get("*")
         if not required:
             # Explicit by default: if object perms aren't declared, deny.
             return False
 
         required_perms: Iterable[str] = required
-        return user_has_object_perms(
-            request=request, obj=obj, required_perms=required_perms
-        )
+        return user_has_object_perms(request=request, obj=obj, required_perms=required_perms)

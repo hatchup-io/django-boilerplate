@@ -1,0 +1,36 @@
+# syntax=docker/dockerfile:1
+# Local development Dockerfile.
+# Single-stage, dev dependencies included, source mounted at runtime via docker-compose.
+
+FROM python:3.14-slim
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never \
+    PATH="/app/.venv/bin:$PATH"
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    git \
+    libpq-dev \
+    libmagic1 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install all deps (including dev) for editor tooling, tests, etc.
+COPY pyproject.toml uv.lock* ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --no-install-project
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+EXPOSE 8000
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
