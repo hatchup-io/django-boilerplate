@@ -1,3 +1,14 @@
+> [!WARNING]
+> **This template is retired and no longer maintained.**
+>
+> HatchUp is not building new services from this boilerplate, so it will not
+> receive dependency updates, security patches or fixes. It is kept public and
+> archived for reference only — the code here reflects April 2026 and its
+> dependencies have not been reviewed since.
+>
+> Do not start a new project from it. Take a current, actively maintained
+> service in the organisation as your starting point instead.
+
 # Django REST API Backend (Template)
 
 A **GitHub template** for a Django 6 REST API with DRF, JWT auth, Redis cache, PostgreSQL, and optional MinIO/S3 storage. Use this repository as a template to create new projects with one-click setup and a single initiation step to configure your project name everywhere.
